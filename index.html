@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock VPN App</title>
+    <style>
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .status {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .status.connected {
+            color: #2ecc71;
+            background: rgba(46, 204, 113, 0.1);
+        }
+
+        .status.disconnected {
+            color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+
+        .server-select {
+            margin-bottom: 20px;
+        }
+
+        .server-select label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            color: #ddd;
+        }
+
+        .server-select select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            appearance: none;
+            outline: none;
+            transition: background 0.3s ease;
+        }
+
+        .server-select select:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .server-select select option {
+            background: #2a5298;
+            color: white;
+        }
+
+        .connect-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .connect-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .connect-btn.connected {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .connect-btn.connected:hover {
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+        }
+
+        .ip-address {
+            margin-top: 20px;
+            font-size: 1.1rem;
+            color: #ddd;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .ip-address span {
+            font-weight: bold;
+            color: #fff;
+        }
+
+        /* Animation for connection status */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .status.connected, .status.disconnected {
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mock VPN App</h1>
+        <div class="status disconnected" id="status">Disconnected</div>
+        <div class="server-select">
+            <label for="server-location">Select Server Location:</label>
+            <select id="server-location">
+                <option value="us">United States</option>
+                <option value="uk">United Kingdom</option>
+                <option value="ca">Canada</option>
+                <option value="de">Germany</option>
+                <option value="jp">Japan</option>
+            </select>
+        </div>
+        <button class="connect-btn" id="connect-btn">Connect</button>
+        <div class="ip-address" id="ip-address">Your IP: <span id="user-ip">192.168.1.1</span></div>
+    </div>
+
+    <script>
+        // Mock VPN App Logic
+        const statusElement = document.getElementById('status');
+        const connectBtn = document.getElementById('connect-btn');
+        const serverLocationSelect = document.getElementById('server-location');
+        const userIpElement = document.getElementById('user-ip');
+
+        let isConnected = false;
+
+        // Simulate user's real IP (for demonstration)
+        const realIp = "192.168.1.1";
+
+        // Simulate VPN IPs for different locations
+        const vpnIps = {
+            us: "104.16.123.96",
+            uk: "104.16.124.96",
+            ca: "104.16.125.96",
+            de: "104.16.126.96",
+            jp: "104.16.127.96"
+        };
+
+        // Handle connect/disconnect button click
+        connectBtn.addEventListener('click', () => {
+            if (isConnected) {
+                disconnect();
+            } else {
+                connect();
+            }
+        });
+
+        // Connect to VPN
+        function connect() {
+            const selectedLocation = serverLocationSelect.value;
+            const vpnIp = vpnIps[selectedLocation];
+
+            // Simulate connection process
+            statusElement.textContent = "Connecting...";
+            setTimeout(() => {
+                isConnected = true;
+                statusElement.textContent = "Connected";
+                statusElement.classList.remove('disconnected');
+                statusElement.classList.add('connected');
+                connectBtn.textContent = "Disconnect";
+                connectBtn.classList.add('connected');
+                userIpElement.textContent = vpnIp;
+            }, 2000); // Simulate 2-second connection delay
+        }
+
+        // Disconnect from VPN
+        function disconnect() {
+            // Simulate disconnection process
+            statusElement.textContent = "Disconnecting...";
+            setTimeout(() => {
+                isConnected = false;
+                statusElement.textContent = "Disconnected";
+                statusElement.classList.remove('connected');
+                statusElement.classList.add('disconnected');
+                connectBtn.textContent = "Connect";
+                connectBtn.classList.remove('connected');
+                userIpElement.textContent = realIp;
+            }, 1000); // Simulate 1-second disconnection delay
+        }
+    </script>
+</body>
+</html>
